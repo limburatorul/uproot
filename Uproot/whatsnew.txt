@@ -13,4 +13,5 @@ Uproot lists every app on your PC the moment it opens, finds one as you type, an
 - Tick several apps and remove them in one go. Uproot waits for each uninstaller to really finish, even the ones that hand off to a copy of themselves.
 - Afterwards it shows the folders and registry keys left behind, named after the app and used by nothing else still installed. Folders go to the Recycle Bin, keys are backed up to a .reg file first.
 **Also**
+- **1.0.1:** Uproot no longer closes a second after it opens when one app's icon carries a broken colour profile. A picture that can't be read is simply left blank.
 - Works with File Labs (open an app's folder), SpaceScan (see what's inside it) and Shelf (your games are marked).

@@ -88,15 +88,20 @@ public partial class MainWindow : Window
         }, "Sizes");
     }
 
+    /// <summary>Icons and sizes are extras: whatever goes wrong there is logged, and the list stays up without them.</summary>
     private static void StartBackground(Action work, string name) =>
-        new Thread(() => work()) { IsBackground = true, Priority = ThreadPriority.BelowNormal, Name = name }.Start();
+        new Thread(() =>
+        {
+            try { work(); }
+            catch (Exception ex) { AppLog.Write($"{name} stopped: {ex}"); }
+        }) { IsBackground = true, Priority = ThreadPriority.BelowNormal, Name = name }.Start();
 
     private static string Id(InstalledApp a) => a.KeyPath ?? a.PackageFullName ?? a.Name;
 
     private void App_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(InstalledApp.IsChecked)) Counts();
-        else if (e.PropertyName == nameof(InstalledApp.Bytes) && sender == AppList.SelectedItem) ShowDetails();
+        else if (e.PropertyName is nameof(InstalledApp.Bytes) or nameof(InstalledApp.Icon) && sender == AppList.SelectedItem) ShowDetails(); // both arrive after the list
     }
 
     // --- filter, search, sort ---

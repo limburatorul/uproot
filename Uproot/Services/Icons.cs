@@ -22,7 +22,7 @@ public static class Icons
                 var image = app.Kind == AppKind.Store ? Logo(app.IconPath) : FromFile(Source(app), drives, network);
                 if (image != null) onUi(() => app.Icon = image);
             }
-            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or COMException or ArgumentException) { }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or NotSupportedException or COMException or ArgumentException or FileFormatException) { }
         }
     }
 
@@ -77,6 +77,7 @@ public static class Icons
         var image = new BitmapImage();
         image.BeginInit();
         image.CacheOption = BitmapCacheOption.OnLoad;
+        image.CreateOptions = BitmapCreateOptions.IgnoreColorProfile; // a logo with a broken ICC profile threw and took the app down (1.0.0)
         image.DecodePixelWidth = 64;
         image.UriSource = new Uri(file);
         image.EndInit();

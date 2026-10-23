@@ -41,6 +41,16 @@ public static class SelfTest
         Check(!Sizes.TooBroad(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Foo")), "an app folder is not");
         Check(Paths.Within("C:\\a\\b", "C:\\a") && !Paths.Within("C:\\ab", "C:\\a"), "within");
 
+        // every real icon on this PC loads without an exception escaping (1.0.0 died on a Store logo with a broken colour profile)
+        try
+        {
+            var apps = Inventory.Desktop().Concat(Inventory.Store()).ToList();
+            int loaded = 0;
+            Icons.LoadAll(apps, _ => loaded++, CancellationToken.None);
+            Check(loaded > 0, $"icons of this PC's apps load without an exception ({loaded} of {apps.Count}; Windows components and gone files have none)");
+        }
+        catch (Exception ex) { Check(false, $"icons of this PC's apps load: {ex.GetType().Name} {ex.Message}"); }
+
         FakeApp();
         _log.WriteLine(_failed == 0 ? "ALL OK" : $"{_failed} FAILED");
         _log.Dispose();
