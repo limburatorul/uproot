@@ -142,7 +142,8 @@
                         <Button Grid.Column="5" Style="{StaticResource HeaderButton}" Tag="size" Click="Sort_Click" x:Name="SortSize" HorizontalAlignment="Right" />
                     </Grid>
                     <Grid>
-                        <ListBox x:Name="AppList" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource AppRow}"
+                        <!-- a ListBox takes the system's text colour (black), not the window's: set it, or the names go black on the dark card -->
+                        <ListBox x:Name="AppList" Background="Transparent" BorderThickness="0" ItemContainerStyle="{StaticResource AppRow}" Foreground="{DynamicResource TextPrimary}"
                                  VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling" VirtualizingPanel.ScrollUnit="Pixel"
                                  ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="AppList_SelectionChanged" KeyDown="AppList_KeyDown"
                                  MouseDoubleClick="AppList_MouseDoubleClick" AutomationProperties.Name="Installed apps">
