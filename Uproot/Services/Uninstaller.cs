@@ -69,7 +69,7 @@ public static class Uninstaller
         }
 
         var command = CommandFor(app, quiet);
-        if (command == null) return new(false, app.Broken ?? "It has no uninstaller.");
+        if (command == null) return new(false, app.IssueText ?? "It has no uninstaller.");
         var (file, args) = Commands.Split(Environment.ExpandEnvironmentVariables(command));
 
         IntPtr job = CreateJobObject(IntPtr.Zero, null);

@@ -3,9 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Uproot" Width="1180" Height="760" MinWidth="860" MinHeight="480"
         WindowStartupLocation="CenterScreen" Background="Transparent"
-        FontFamily="{DynamicResource UiFont}" FontSize="13" Foreground="{DynamicResource TextPrimary}"
+        FontFamily="{DynamicResource UiFont}" FontSize="14" Foreground="{DynamicResource TextPrimary}"
         TextOptions.TextFormattingMode="Display">
     <Window.Resources>
+        <!-- links in the app's green, underlined only under the pointer: the system blue was unreadable on dark glass -->
+        <Style TargetType="Hyperlink">
+            <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+            <Setter Property="TextDecorations" Value="{x:Null}" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter Property="TextDecorations" Value="Underline" /></Trigger>
+            </Style.Triggers>
+        </Style>
         <!-- a row: hover and selection tint the whole row, nothing else moves -->
         <Style x:Key="AppRow" TargetType="ListBoxItem">
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -37,7 +45,7 @@
         <Style x:Key="HeaderButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
-            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontSize" Value="12.5" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="HorizontalAlignment" Value="Left" />
             <Setter Property="Template">
@@ -55,8 +63,8 @@
         </Style>
         <Style x:Key="Label" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondary}" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="Margin" Value="0,10,0,1" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="Margin" Value="0,12,0,2" />
         </Style>
     </Window.Resources>
 
@@ -86,8 +94,12 @@
                     <ToggleButton Style="{StaticResource PillToggle}" Tag="all" IsChecked="True" Click="Filter_Click" Margin="0,0,6,0" />
                     <ToggleButton Style="{StaticResource PillToggle}" Tag="desktop" Click="Filter_Click" Margin="0,0,6,0" />
                     <ToggleButton Style="{StaticResource PillToggle}" Tag="store" Click="Filter_Click" Margin="0,0,6,0" />
-                    <ToggleButton Style="{StaticResource PillToggle}" Tag="broken" Click="Filter_Click" Margin="0,0,6,0"
-                                  ToolTip="Entries whose uninstaller is gone: they can only be taken off the list" />
+                    <ToggleButton Style="{StaticResource PillToggle}" Tag="drive" Click="Filter_Click" Margin="0,0,6,0"
+                                  ToolTip="Installed on a drive that isn't connected now: plug it back in, or delete their entries from the registry" />
+                    <ToggleButton Style="{StaticResource PillToggle}" Tag="files" Click="Filter_Click" Margin="0,0,6,0"
+                                  ToolTip="Still listed as installed, but their folder or uninstaller has been deleted" />
+                    <ToggleButton Style="{StaticResource PillToggle}" Tag="none" Click="Filter_Click" Margin="0,0,6,0"
+                                  ToolTip="Entries with no uninstaller at all: they can only be deleted from the registry" />
                 </StackPanel>
             </DockPanel>
 
@@ -154,16 +166,16 @@
                                             <StackPanel Orientation="Horizontal">
                                                 <TextBlock Text="{Binding Name}" TextTrimming="CharacterEllipsis" FontWeight="SemiBold" />
                                                 <Border x:Name="StoreTag" Style="{StaticResource Tag}" Background="{DynamicResource PillBackground}" Visibility="Collapsed">
-                                                    <TextBlock Text="Store" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" />
+                                                    <TextBlock Text="Store" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" />
                                                 </Border>
                                                 <Border x:Name="BrokenTag" Style="{StaticResource Tag}" BorderBrush="{DynamicResource StatusWarn}" BorderThickness="1" Visibility="Collapsed">
-                                                    <TextBlock Text="Uninstaller missing" FontSize="10.5" Foreground="{DynamicResource StatusWarn}" />
+                                                    <TextBlock Text="{Binding IssueTag}" FontSize="11.5" Foreground="{DynamicResource StatusWarn}" />
                                                 </Border>
                                                 <Border x:Name="ShelfTag" Style="{StaticResource Tag}" Background="{DynamicResource PillBackground}" Visibility="Collapsed">
-                                                    <TextBlock Text="In your Shelf" FontSize="10.5" Foreground="{DynamicResource TextSecondary}" />
+                                                    <TextBlock Text="In your Shelf" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" />
                                                 </Border>
                                             </StackPanel>
-                                            <TextBlock Text="{Binding Subtitle}" FontSize="11.5" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" />
+                                            <TextBlock Text="{Binding Subtitle}" FontSize="12.5" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" />
                                         </StackPanel>
                                         <TextBlock Grid.Column="3" Text="{Binding Version}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
                                         <TextBlock Grid.Column="4" Text="{Binding InstalledText}" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" />
@@ -171,7 +183,7 @@
                                     </Grid>
                                     <DataTemplate.Triggers>
                                         <DataTrigger Binding="{Binding KindText}" Value="Store"><Setter TargetName="StoreTag" Property="Visibility" Value="Visible" /></DataTrigger>
-                                        <DataTrigger Binding="{Binding IsBroken}" Value="True"><Setter TargetName="BrokenTag" Property="Visibility" Value="Visible" /></DataTrigger>
+                                        <DataTrigger Binding="{Binding HasIssue}" Value="True"><Setter TargetName="BrokenTag" Property="Visibility" Value="Visible" /></DataTrigger>
                                         <DataTrigger Binding="{Binding IsShelfGame}" Value="True"><Setter TargetName="ShelfTag" Property="Visibility" Value="Visible" /></DataTrigger>
                                     </DataTemplate.Triggers>
                                 </DataTemplate>
@@ -192,7 +204,7 @@
                                 <TextBlock x:Name="DName" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
                                 <TextBlock x:Name="DPublisher" Foreground="{DynamicResource TextSecondary}" TextWrapping="Wrap" Margin="0,2,0,0" />
                                 <Border x:Name="DBroken" Visibility="Collapsed" BorderBrush="{DynamicResource StatusWarn}" BorderThickness="1" CornerRadius="6" Padding="10,7" Margin="0,12,0,0">
-                                    <TextBlock x:Name="DBrokenText" TextWrapping="Wrap" FontSize="12" />
+                                    <TextBlock x:Name="DBrokenText" TextWrapping="Wrap" FontSize="13" LineHeight="18" />
                                 </Border>
 
                                 <TextBlock Style="{StaticResource Label}" Text="Size" />
@@ -209,13 +221,13 @@
                                     <Hyperlink Click="SpaceScan_Click">See what's inside with SpaceScan</Hyperlink>
                                 </TextBlock>
                                 <TextBlock Style="{StaticResource Label}" Text="Uninstall command" x:Name="DCommandLabel" />
-                                <TextBox x:Name="DCommand" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Cascadia Mono, Consolas" FontSize="11" Padding="6,4"
+                                <TextBox x:Name="DCommand" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Cascadia Mono, Consolas" FontSize="12" Padding="6,4"
                                          AutomationProperties.Name="Uninstall command" />
 
                                 <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
                                     <Button x:Name="DUninstall" Style="{StaticResource PrimaryButton}" Content="Uninstall" Click="UninstallOne_Click" />
-                                    <Button x:Name="DRemoveEntry" Content="Remove from list" Click="RemoveEntry_Click" Margin="8,0,0,0"
-                                            ToolTip="Takes the entry off the list, with what it left behind; the registry entry is backed up first" />
+                                    <Button x:Name="DRemoveEntry" Content="Delete from registry" Click="RemoveEntry_Click" Margin="8,0,0,0"
+                                            ToolTip="Deletes its Uninstall entry from the registry, so it leaves Windows' list of installed apps too; the entry is saved to a .reg file first" />
                                 </StackPanel>
                             </StackPanel>
                         </ScrollViewer>
@@ -226,6 +238,8 @@
             <!-- totals and the batch -->
             <DockPanel Grid.Row="3" Margin="0,12,0,0">
                 <Button x:Name="UninstallChecked" DockPanel.Dock="Right" Style="{StaticResource PrimaryButton}" Click="UninstallChecked_Click" IsEnabled="False" />
+                <Button x:Name="RemoveChecked" DockPanel.Dock="Right" Click="RemoveChecked_Click" Visibility="Collapsed" Margin="0,0,8,0"
+                        ToolTip="Deletes the ticked entries whose drive or files are gone from the registry, so they leave Windows' list of installed apps too; each is saved to a .reg file first" />
                 <Button x:Name="StopWaiting" DockPanel.Dock="Right" Content="Stop waiting" Click="StopWaiting_Click" Visibility="Collapsed" Margin="0,0,8,0"
                         ToolTip="Go on to the next app without waiting for this uninstaller to finish" />
                 <Button x:Name="ClearChecked" DockPanel.Dock="Right" Content="Clear" Click="ClearChecked_Click" Visibility="Collapsed" Margin="0,0,8,0" />

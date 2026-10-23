@@ -9,6 +9,9 @@ namespace Uproot.Services;
 
 public enum AppKind { Desktop, Store }
 
+/// <summary>What is wrong with an entry: its drive isn't connected, its files were deleted, or it has no uninstaller.</summary>
+public enum Issue { None, DriveGone, FilesGone, NoUninstaller }
+
 /// <summary>One row of the list: a desktop program (an Uninstall key) or a Store app (an MSIX package).</summary>
 public sealed class InstalledApp : INotifyPropertyChanged
 {
@@ -26,7 +29,9 @@ public sealed class InstalledApp : INotifyPropertyChanged
     public string? MsiProductCode { get; init; }
     public string? IconPath { get; init; }            // "file" or "file,index"
     public bool IsSystem { get; init; }               // SystemComponent or an update of another entry: hidden by default, like Settings
-    public string? Broken { get; init; }              // why it can't be uninstalled, when it can't
+    public Issue Issue { get; init; }
+    public string? IssueText { get; init; }           // the sentence the details show
+    public bool IsBroken { get; init; }               // the issue stops its uninstaller from running
 
     // store
     public string? PackageFullName { get; init; }
@@ -46,7 +51,8 @@ public sealed class InstalledApp : INotifyPropertyChanged
     public bool IsChecked { get => _checked; set { if (_checked == value) return; _checked = value; Changed(); } }
     public string? ShelfGame { get => _shelfGame; set { _shelfGame = value; Changed(); Changed(nameof(IsShelfGame)); } }
     public bool IsShelfGame => _shelfGame != null;
-    public bool IsBroken => Broken != null;
+    public bool HasIssue => Issue != Issue.None;
+    public string IssueTag => Issue switch { Issue.DriveGone => "Drive not connected", Issue.FilesGone => "Files deleted", Issue.NoUninstaller => "No uninstaller", _ => "" };
 
     /// <summary>What it takes on disk: measured when it could be, else what the installer declared.</summary>
     public long? Bytes => _measured is { } m ? m + (_data ?? 0) : EstimatedBytes;
@@ -72,6 +78,7 @@ public static class Inventory
     {
         var apps = new List<InstalledApp>();
         var drives = Paths.Drives();
+        var network = Paths.NetworkDrives();
         foreach (var (hive, path) in new[] { (Registry.LocalMachine, UninstallPath), (Registry.LocalMachine, UninstallPath32), (Registry.CurrentUser, UninstallPath) })
         {
             using var root = hive.OpenSubKey(path);
@@ -82,6 +89,8 @@ public static class Inventory
                 if (key?.GetValue("DisplayName") is not string name || string.IsNullOrWhiteSpace(name)) continue;
                 var uninstall = Text(key, "UninstallString");
                 var msi = key.GetValue("WindowsInstaller") is 1 && Guid.IsMatch(keyName) ? keyName : null;
+                var location = Text(key, "InstallLocation")?.Trim('"', ' ').TrimEnd('\\') is { Length: > 0 } l ? l : null;
+                var (issue, issueText, broken) = Diagnose(uninstall, msi != null, location, drives, network);
                 apps.Add(new InstalledApp
                 {
                     Kind = AppKind.Desktop,
@@ -89,7 +98,7 @@ public static class Inventory
                     Publisher = Text(key, "Publisher"),
                     Version = Text(key, "DisplayVersion"),
                     Installed = Date(Text(key, "InstallDate")),
-                    InstallLocation = Text(key, "InstallLocation")?.Trim('"', ' ').TrimEnd('\\') is { Length: > 0 } l ? l : null,
+                    InstallLocation = location,
                     KeyPath = $@"{hive.Name}\{path}\{keyName}",
                     UninstallString = uninstall,
                     QuietUninstallString = Text(key, "QuietUninstallString"),
@@ -97,7 +106,7 @@ public static class Inventory
                     IconPath = Text(key, "DisplayIcon"),
                     IsSystem = key.GetValue("SystemComponent") is 1 || key.GetValue("ParentKeyName") != null || key.GetValue("ReleaseType") is string,
                     EstimatedBytes = key.GetValue("EstimatedSize") is int kb && kb > 0 ? kb * 1024L : null,
-                    Broken = msi != null ? null : WhyBroken(uninstall, drives),
+                    Issue = issue, IssueText = issueText, IsBroken = broken,
                 });
             }
         }
@@ -147,15 +156,29 @@ public static class Inventory
         return key != null;
     }
 
-    /// <summary>Why an uninstaller can't run: none given, or its file is gone (a deleted folder, a drive that's no longer there).</summary>
-    internal static string? WhyBroken(string? uninstall, HashSet<char> drives)
+    /// <summary>
+    /// What is wrong with an entry, and whether it stops the uninstaller: no uninstaller at all; the uninstaller, or the
+    /// folder the app was installed in, on a drive that isn't connected; or deleted from a drive that is. Network drives
+    /// are not judged (an elevated window may not see them), and neither are bare commands such as MsiExec.
+    /// </summary>
+    internal static (Issue Issue, string? Text, bool Broken) Diagnose(string? uninstall, bool msi, string? location, HashSet<char> drives, HashSet<char> network)
     {
-        if (string.IsNullOrWhiteSpace(uninstall)) return "It has no uninstaller.";
-        var (file, _) = Commands.Split(Environment.ExpandEnvironmentVariables(uninstall));
-        if (!Paths.IsLocal(file)) return null;                                   // a bare name (msiexec, rundll32) or a network path: not ours to judge
-        char drive = char.ToUpperInvariant(file[0]);
-        if (!drives.Contains(drive)) return $"Its uninstaller was on drive {drive}:, which isn't connected.";
-        return File.Exists(file) ? null : "Its uninstaller has been deleted.";
+        if (string.IsNullOrWhiteSpace(uninstall)) return (Issue.NoUninstaller, "It has no uninstaller.", true);
+        if (!msi && Commands.Split(Environment.ExpandEnvironmentVariables(uninstall)).File is var file && Judged(file))
+        {
+            char d = char.ToUpperInvariant(file[0]);
+            if (!drives.Contains(d)) return (Issue.DriveGone, $"Its uninstaller is on drive {d}:, which isn't connected. Plug that drive back in and it works again.", true);
+            if (!File.Exists(file)) return (Issue.FilesGone, "Its uninstaller has been deleted, so it can't be uninstalled any more.", true);
+        }
+        if (Judged(location))
+        {
+            char d = char.ToUpperInvariant(location![0]);
+            if (!drives.Contains(d)) return (Issue.DriveGone, $"It was installed on drive {d}:, which isn't connected. Plug that drive back in and it works again.", false);
+            if (!Directory.Exists(location)) return (Issue.FilesGone, "The folder it was installed in has been deleted; its uninstaller may fail.", false);
+        }
+        return (Issue.None, null, false);
+
+        bool Judged(string? path) => Paths.IsLocal(path) && !network.Contains(char.ToUpperInvariant(path![0]));
     }
 
     private static string? Text(RegistryKey key, string name) => key.GetValue(name) is string s && !string.IsNullOrWhiteSpace(s) ? s.Trim() : null;

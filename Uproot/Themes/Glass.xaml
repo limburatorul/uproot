@@ -5,16 +5,16 @@
     <!-- Sysoptimizer's Glass theme, with Uproot's own accent: a fresh-root green. Styles/Controls.xaml is shared with
          Sysoptimizer and expects every key below. -->
 
-    <!-- Surfaces and text: Surface is 72% opaque so the acrylic backdrop shows through; SurfaceElevated stays near-opaque for popups -->
-    <SolidColorBrush x:Key="Surface" Color="#B81E1E20" />
+    <!-- Surfaces and text: Surface is 90% opaque, a hint of the acrylic behind; Uproot is a list to read, so text wins over glass (1.0.2) -->
+    <SolidColorBrush x:Key="Surface" Color="#E61C1C1F" />
     <SolidColorBrush x:Key="SurfaceElevated" Color="#F0222226" />
     <SolidColorBrush x:Key="Border" Color="#14FFFFFF" />
     <SolidColorBrush x:Key="CardBackground" Color="Transparent" />
     <SolidColorBrush x:Key="TextPrimary" Color="#EBFFFFFF" />
-    <SolidColorBrush x:Key="TextSecondary" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#BDFFFFFF" />
     <SolidColorBrush x:Key="LogForeground" Color="#EBFFFFFF" />
     <SolidColorBrush x:Key="RowHover" Color="#0DFFFFFF" />
-    <SolidColorBrush x:Key="RowSelected" Color="#1F34D399" />
+    <SolidColorBrush x:Key="RowSelected" Color="#2934D399" />
 
     <!-- Accent -->
     <SolidColorBrush x:Key="Accent" Color="#34D399" />

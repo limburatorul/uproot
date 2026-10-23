@@ -27,11 +27,16 @@ public static class SelfTest
         // broken entries
         var drives = Paths.Drives();
         char missing = "QRSTUVWXYZHIJKLMNOP".First(c => !drives.Contains(c));
-        Check(Inventory.WhyBroken(null, drives) == "It has no uninstaller.", "no uninstaller");
-        Check(Inventory.WhyBroken($"{missing}:\\Games\\x\\unins000.exe", drives)?.Contains($"drive {missing}:") == true, "uninstaller on a missing drive");
-        Check(Inventory.WhyBroken("C:\\Nope\\uninst.exe", drives) == "Its uninstaller has been deleted.", "uninstaller deleted");
-        Check(Inventory.WhyBroken("MsiExec.exe /X{1}", drives) == null, "msiexec is not judged");
-        Check(Inventory.WhyBroken("\\\\host\\share\\u.exe", drives) == null, "a network path is never touched");
+        var none = new HashSet<char>();
+        string sysExe = Environment.SystemDirectory + "\\cmd.exe";
+        Check(Inventory.Diagnose(null, false, null, drives, none) is (Issue.NoUninstaller, _, true), "no uninstaller");
+        Check(Inventory.Diagnose($"{missing}:\\Games\\x\\unins000.exe", false, null, drives, none) is (Issue.DriveGone, var t1, true) && t1!.Contains($"drive {missing}:"), "uninstaller on a missing drive");
+        Check(Inventory.Diagnose("C:\\Nope\\uninst.exe", false, null, drives, none) is (Issue.FilesGone, _, true), "uninstaller deleted");
+        Check(Inventory.Diagnose(sysExe, false, $"{missing}:\\Games\\x", drives, none) is (Issue.DriveGone, _, false), "installed on a missing drive, uninstaller still there");
+        Check(Inventory.Diagnose(sysExe, false, "C:\\Nope\\Gone App", drives, none) is (Issue.FilesGone, _, false), "install folder deleted, uninstaller still there");
+        Check(Inventory.Diagnose("MsiExec.exe /X{1}", true, null, drives, none) is (Issue.None, _, false), "msiexec is not judged");
+        Check(Inventory.Diagnose("\\\\host\\share\\u.exe", false, null, drives, none) is (Issue.None, _, false), "a network path is never touched");
+        Check(Inventory.Diagnose($"{missing}:\\x\\u.exe", false, null, drives, new HashSet<char> { missing }) is (Issue.None, _, false), "a network drive is never judged");
 
         // names and safety
         Check(Leftovers.Clean("Foo Bar 2.1.0 (x64)") == "Foo Bar", "clean name with version and arch");

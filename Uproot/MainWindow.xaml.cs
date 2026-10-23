@@ -112,7 +112,9 @@ public partial class MainWindow : Window
         if (a.IsSystem && !Settings.ShowSystem) return false;
         if (_filter == "desktop" && a.Kind != AppKind.Desktop) return false;
         if (_filter == "store" && a.Kind != AppKind.Store) return false;
-        if (_filter == "broken" && !a.IsBroken) return false;
+        if (_filter == "drive" && a.Issue != Issue.DriveGone) return false;
+        if (_filter == "files" && a.Issue != Issue.FilesGone) return false;
+        if (_filter == "none" && a.Issue != Issue.NoUninstaller) return false;
         foreach (var w in _words) if (!a.Search.Contains(w)) return false;
         return true;
     }
@@ -177,9 +179,16 @@ public partial class MainWindow : Window
             ["all"] = $"All {listed.Count}",
             ["desktop"] = $"Desktop {listed.Count(a => a.Kind == AppKind.Desktop)}",
             ["store"] = $"Store {listed.Count(a => a.Kind == AppKind.Store)}",
-            ["broken"] = $"Uninstaller missing {listed.Count(a => a.IsBroken)}",
+            ["drive"] = $"Drive not connected {listed.Count(a => a.Issue == Issue.DriveGone)}",
+            ["files"] = $"Files deleted {listed.Count(a => a.Issue == Issue.FilesGone)}",
+            ["none"] = $"No uninstaller {listed.Count(a => a.Issue == Issue.NoUninstaller)}",
         };
-        foreach (ToggleButton pill in Filters.Children) pill.Content = labels[(string)pill.Tag];
+        foreach (ToggleButton pill in Filters.Children)
+        {
+            pill.Content = labels[(string)pill.Tag];
+            // a problem nobody has needs no pill; the one in use stays until it is left
+            pill.Visibility = (string)pill.Tag is "drive" or "files" or "none" && labels[(string)pill.Tag].EndsWith(" 0") && pill.IsChecked != true ? Visibility.Collapsed : Visibility.Visible;
+        }
         SearchHint.Text = $"Search {listed.Count} apps";
 
         int shown = _view?.Count ?? 0;
@@ -194,6 +203,9 @@ public partial class MainWindow : Window
             ? $"{shown} of {listed.Count} apps shown"
             : $"{ticked.Count} ticked" + (bytes > 0 ? $" · {Format.Size(bytes)}" : "") + $" · {shown} of {listed.Count} apps shown";
         int removable = ticked.Count(a => !a.IsBroken);
+        int entries = ticked.Count(a => a.HasIssue && a.Kind == AppKind.Desktop);
+        RemoveChecked.Content = entries == 1 ? "Delete 1 entry from registry" : $"Delete {entries} entries from registry";
+        RemoveChecked.Visibility = entries > 0 ? Visibility.Visible : Visibility.Collapsed;
         UninstallChecked.Content = removable <= 1 ? "Uninstall" : $"Uninstall {removable} apps";
         UninstallChecked.IsEnabled = removable > 0;
         ClearChecked.Visibility = ticked.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
@@ -249,8 +261,8 @@ public partial class MainWindow : Window
         DIcon.Source = a.Icon;
         DName.Text = a.Name;
         DPublisher.Text = string.Join(" · ", new[] { a.Publisher, a.KindText, a.ShelfGame != null ? "in your Shelf" : null }.Where(s => !string.IsNullOrEmpty(s)));
-        DBroken.Visibility = a.IsBroken ? Visibility.Visible : Visibility.Collapsed;
-        DBrokenText.Text = a.Broken + " Its entry can be taken off the list, with what it left behind.";
+        DBroken.Visibility = a.HasIssue ? Visibility.Visible : Visibility.Collapsed;
+        DBrokenText.Text = a.IssueText + (a.IsBroken ? " Its entry can be deleted from the registry." : " You can still try its uninstaller, or delete its entry from the registry.");
 
         DSize.Text = a.MeasuredBytes is { } m
             ? Format.Size(m + (a.DataBytes ?? 0)) + (a.DataBytes is > 0 ? $" ({Format.Size(m)} app, {Format.Size(a.DataBytes.Value)} data)" : "")
@@ -265,7 +277,7 @@ public partial class MainWindow : Window
         DCommandLabel.Visibility = DCommand.Visibility = command != null ? Visibility.Visible : Visibility.Collapsed;
         DCommand.Text = command ?? "";
         DUninstall.IsEnabled = !a.IsBroken && !_busy;
-        DRemoveEntry.Visibility = a.IsBroken && a.Kind == AppKind.Desktop ? Visibility.Visible : Visibility.Collapsed;
+        DRemoveEntry.Visibility = a.HasIssue && a.Kind == AppKind.Desktop ? Visibility.Visible : Visibility.Collapsed;
         DRemoveEntry.IsEnabled = !_busy;
     }
 
@@ -335,16 +347,32 @@ public partial class MainWindow : Window
         SetBusy(false);
     }
 
-    /// <summary>An entry whose uninstaller is gone: its key and what it left, after the user has seen them.</summary>
     private async void RemoveEntry_Click(object sender, RoutedEventArgs e)
     {
-        if (AppList.SelectedItem is not InstalledApp app || _busy) return;
+        if (AppList.SelectedItem is InstalledApp app) await RemoveEntries([app]);
+    }
+
+    private async void RemoveChecked_Click(object sender, RoutedEventArgs e) =>
+        await RemoveEntries(_all.Where(a => a.IsChecked && a.HasIssue && a.Kind == AppKind.Desktop).ToList());
+
+    /// <summary>
+    /// Entries whose drive or files are gone: their registry entries, ticked, and anything named after them that
+    /// nothing else uses, unticked — for a game that sat on a drive now unplugged, a folder in AppData may hold its saves.
+    /// </summary>
+    private async Task RemoveEntries(List<InstalledApp> apps)
+    {
+        if (_busy || apps.Count == 0) return;
         SetBusy(true);
-        var others = _all.Where(a => a != app).ToList();
-        var found = await Task.Run(() => Leftovers.Find(app, others));
-        var window = new LeftoversWindow($"Take {app.Name} off the list", "Its uninstaller is gone, so these are what's left of it: its entry in the list, and anything named after it that nothing else uses.", found);
+        Status.Text = "Looking for what they left behind…";
+        var others = _all.Except(apps).ToList();
+        var found = await Task.Run(() => apps.SelectMany(a => Leftovers.Find(a, others)).ToList());
+        foreach (var f in found) f.IsChecked = apps.Any(a => a.KeyPath == f.Path); // the Uninstall entries themselves
+        string what = apps.Count == 1 ? apps[0].Name : $"{apps.Count} entries";
+        var window = new LeftoversWindow($"Delete {what} from the registry",
+            "Their Uninstall entries are ticked: deleting them takes the apps off this list and off Windows' Installed apps. Other keys and folders named after them start unticked, since one may hold saves or settings you want to keep; tick only what you're sure about.", found);
         window.ShowDialog();
         Report(window.Failed);
+        foreach (var a in apps) a.IsChecked = false;
         await Reload();
         SetBusy(false);
     }
@@ -377,7 +405,7 @@ public partial class MainWindow : Window
     {
         _busy = busy;
         StopWaiting.Visibility = busy ? Visibility.Visible : Visibility.Collapsed;
-        UninstallChecked.IsEnabled = !busy;
+        UninstallChecked.IsEnabled = RemoveChecked.IsEnabled = !busy;
         ShowDetails();
         if (!busy) Counts();
     }
