@@ -1,0 +1,68 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+
+    <!-- Sysoptimizer's Glass theme, with Uproot's own accent: a fresh-root green. Styles/Controls.xaml is shared with
+         Sysoptimizer and expects every key below. -->
+
+    <!-- Surfaces and text: Surface is 72% opaque so the acrylic backdrop shows through; SurfaceElevated stays near-opaque for popups -->
+    <SolidColorBrush x:Key="Surface" Color="#B81E1E20" />
+    <SolidColorBrush x:Key="SurfaceElevated" Color="#F0222226" />
+    <SolidColorBrush x:Key="Border" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="CardBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="TextPrimary" Color="#EBFFFFFF" />
+    <SolidColorBrush x:Key="TextSecondary" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="LogForeground" Color="#EBFFFFFF" />
+    <SolidColorBrush x:Key="RowHover" Color="#0DFFFFFF" />
+    <SolidColorBrush x:Key="RowSelected" Color="#1F34D399" />
+
+    <!-- Accent -->
+    <SolidColorBrush x:Key="Accent" Color="#34D399" />
+    <SolidColorBrush x:Key="AccentDim" Color="#3334D399" />
+    <SolidColorBrush x:Key="OnAccent" Color="#0F0F10" />
+
+    <!-- Scrollbar -->
+    <SolidColorBrush x:Key="ScrollThumb" Color="#29FFFFFF" />
+    <SolidColorBrush x:Key="ScrollThumbHover" Color="#4DFFFFFF" />
+    <SolidColorBrush x:Key="ScrollThumbActive" Color="#6BFFFFFF" />
+
+    <!-- Good / warning / bad -->
+    <SolidColorBrush x:Key="StatusGood" Color="#22C55E" />
+    <SolidColorBrush x:Key="StatusWarn" Color="#F97316" />
+    <SolidColorBrush x:Key="StatusBad" Color="#EF4444" />
+
+    <!-- Tabs -->
+    <SolidColorBrush x:Key="TabBackground" Color="Transparent" />
+    <SolidColorBrush x:Key="TabBackgroundSelected" Color="Transparent" />
+    <SolidColorBrush x:Key="TabForeground" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="TabForegroundSelected" Color="#EBFFFFFF" />
+    <SolidColorBrush x:Key="TabIndicator" Color="#34D399" />
+    <Thickness x:Key="TabIndicatorThickness">0,0,0,2</Thickness>
+    <Thickness x:Key="TabMargin">0</Thickness>
+    <Thickness x:Key="TabPadding">16,10</Thickness>
+
+    <!-- Buttons, pills, checkboxes: Win11 control fill (6% white, raised above the surface) and a strong 54% check outline -->
+    <SolidColorBrush x:Key="ButtonBackground" Color="#0FFFFFFF" />
+    <SolidColorBrush x:Key="ButtonForeground" Color="#EBFFFFFF" />
+    <SolidColorBrush x:Key="ButtonBorder" Color="#1FFFFFFF" />
+    <SolidColorBrush x:Key="ButtonHoverBorder" Color="#34D399" />
+    <SolidColorBrush x:Key="PillBackground" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="PillForeground" Color="#99FFFFFF" />
+    <SolidColorBrush x:Key="PillBackgroundSelected" Color="#34D399" />
+    <SolidColorBrush x:Key="PillBorderSelected" Color="#34D399" />
+    <SolidColorBrush x:Key="PillForegroundSelected" Color="#0F0F10" />
+    <SolidColorBrush x:Key="CheckBorder" Color="#8BFFFFFF" />
+    <Thickness x:Key="ControlBorderThickness">1</Thickness>
+
+    <!-- Shape -->
+    <CornerRadius x:Key="CardRadius">8</CornerRadius>
+    <CornerRadius x:Key="ControlRadius">6</CornerRadius>
+    <CornerRadius x:Key="PillRadius">12</CornerRadius>
+    <CornerRadius x:Key="CheckRadius">4</CornerRadius>
+    <CornerRadius x:Key="PopupRadius">6</CornerRadius>
+    <CornerRadius x:Key="TabRadius">0</CornerRadius>
+
+    <!-- Type -->
+    <FontFamily x:Key="UiFont">Segoe UI Variable, Segoe UI</FontFamily>
+
+</ResourceDictionary>
