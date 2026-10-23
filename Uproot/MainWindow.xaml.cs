@@ -259,6 +259,7 @@ public partial class MainWindow : Window
         Details.Visibility = Visibility.Visible;
         DetailsEmpty.Visibility = Visibility.Collapsed;
         DIcon.Source = a.Icon;
+        DIcon.Visibility = a.Icon != null ? Visibility.Visible : Visibility.Collapsed; // no empty square above the name
         DName.Text = a.Name;
         DPublisher.Text = string.Join(" · ", new[] { a.Publisher, a.KindText, a.ShelfGame != null ? "in your Shelf" : null }.Where(s => !string.IsNullOrEmpty(s)));
         DBroken.Visibility = a.HasIssue ? Visibility.Visible : Visibility.Collapsed;
@@ -276,7 +277,8 @@ public partial class MainWindow : Window
         var command = Uninstaller.CommandFor(a, Settings.Quiet);
         DCommandLabel.Visibility = DCommand.Visibility = command != null ? Visibility.Visible : Visibility.Collapsed;
         DCommand.Text = command ?? "";
-        DUninstall.IsEnabled = !a.IsBroken && !_busy;
+        DUninstall.Visibility = a.IsBroken ? Visibility.Collapsed : Visibility.Visible; // a dimmed green button read as one to press
+        DUninstall.IsEnabled = !_busy;
         DRemoveEntry.Visibility = a.HasIssue && a.Kind == AppKind.Desktop ? Visibility.Visible : Visibility.Collapsed;
         DRemoveEntry.IsEnabled = !_busy;
     }

@@ -1,11 +1,14 @@
 <Window x:Class="Uproot.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sys="clr-namespace:System;assembly=System.Runtime"
         Title="Uproot" Width="1180" Height="760" MinWidth="860" MinHeight="480"
         WindowStartupLocation="CenterScreen" Background="Transparent"
         FontFamily="{DynamicResource UiFont}" FontSize="14" Foreground="{DynamicResource TextPrimary}"
         TextOptions.TextFormattingMode="Display">
     <Window.Resources>
+        <!-- a scrollbar thumb never shorter than 36 px: over 500 rows it was a speck (Track takes its minimum from this key) -->
+        <sys:Double x:Key="{x:Static SystemParameters.VerticalScrollBarButtonHeightKey}">72</sys:Double>
         <!-- links in the app's green, underlined only under the pointer: the system blue was unreadable on dark glass -->
         <Style TargetType="Hyperlink">
             <Setter Property="Foreground" Value="{DynamicResource Accent}" />
@@ -119,9 +122,11 @@
                     <ColumnDefinition Width="320" />
                 </Grid.ColumnDefinitions>
 
-                <!-- the list -->
+                <!-- the list, on an opaque card so its text gets ClearType -->
+                <Border Background="{DynamicResource Panel}" CornerRadius="{DynamicResource CardRadius}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
+                        Padding="8,10,2,6" RenderOptions.ClearTypeHint="Enabled">
                 <DockPanel>
-                    <Grid DockPanel.Dock="Top" Margin="6,0,18,4">
+                    <Grid DockPanel.Dock="Top" Margin="6,0,18,6">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="30" />
                             <ColumnDefinition Width="38" />
@@ -192,9 +197,11 @@
                         <TextBlock x:Name="EmptyText" Visibility="Collapsed" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondary}" />
                     </Grid>
                 </DockPanel>
+                </Border>
 
                 <!-- the chosen app -->
-                <Border Grid.Column="1" Margin="14,0,0,0" Padding="18,16" CornerRadius="{DynamicResource CardRadius}" BorderBrush="{DynamicResource Border}" BorderThickness="1">
+                <Border Grid.Column="1" Margin="14,0,0,0" Padding="18,16" CornerRadius="{DynamicResource CardRadius}" BorderBrush="{DynamicResource Border}" BorderThickness="1"
+                        Background="{DynamicResource Panel}" RenderOptions.ClearTypeHint="Enabled">
                     <Grid>
                         <TextBlock x:Name="DetailsEmpty" Text="Pick an app to see where it lives and what it takes. Tick several to remove them in one go."
                                    TextWrapping="Wrap" Foreground="{DynamicResource TextSecondary}" />

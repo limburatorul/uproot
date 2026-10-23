@@ -16,6 +16,7 @@ Uproot lists every app on your PC the moment it opens, finds one as you type, an
 - Entries that aren't really there any more are sorted by why: **Drive not connected** (installed on a drive that's unplugged now), **Files deleted** (its folder or uninstaller was removed) and **No uninstaller**. Each has its own filter, shown only when something's in it.
 - Tick as many as you like and **delete them from the registry** in one go: they leave Uproot and Windows' own Installed apps. Each entry is saved to a .reg file first, and folders named after them start unticked, since one may hold saves.
 - Easier to read: larger text, lighter grey for the second lines, a calmer background and links in green.
+- **1.0.3:** the list and the details sit on solid cards, so their text is drawn with ClearType and reads sharp instead of soft. The scrollbar has a handle you can see, an app without an icon leaves no empty square, and an entry that can't be uninstalled shows no Uninstall button at all.
 **Also**
 - **1.0.1:** Uproot no longer closes a second after it opens when one app's icon carries a broken colour profile. A picture that can't be read is simply left blank.
 - Works with File Labs (open an app's folder), SpaceScan (see what's inside it) and Shelf (your games are marked).

@@ -8,6 +8,9 @@
     <!-- Surfaces and text: Surface is 90% opaque, a hint of the acrylic behind; Uproot is a list to read, so text wins over glass (1.0.2) -->
     <SolidColorBrush x:Key="Surface" Color="#E61C1C1F" />
     <SolidColorBrush x:Key="SurfaceElevated" Color="#F0222226" />
+    <!-- The cards that hold text to read (the list, the details) are opaque: WPF draws ClearType only on an opaque
+         background, and on glass the text fell back to grey antialiasing and looked soft (1.0.3). -->
+    <SolidColorBrush x:Key="Panel" Color="#FF202024" />
     <SolidColorBrush x:Key="Border" Color="#14FFFFFF" />
     <SolidColorBrush x:Key="CardBackground" Color="Transparent" />
     <SolidColorBrush x:Key="TextPrimary" Color="#EBFFFFFF" />

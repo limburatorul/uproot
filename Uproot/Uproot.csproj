@@ -10,7 +10,7 @@
     <UseWPF>true</UseWPF>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>Uproot</AssemblyName>
-    <Version>1.0.2</Version>
+    <Version>1.0.3</Version>
     <Product>Uproot</Product>
     <AssemblyTitle>Uproot</AssemblyTitle>
     <Description>Uninstalls Windows apps, with what they leave behind, from a list that opens and searches instantly</Description>
