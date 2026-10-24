@@ -91,7 +91,12 @@ public sealed class WhatsNewWindow : Window
         var right = new DockPanel();
         DockPanel.SetDock(_banner, Dock.Top);
         right.Children.Add(_banner);
-        right.Children.Add(_notesScroll);
+        // the notes on an opaque card, so the text is drawn with ClearType like the main window's (1.0.4)
+        var notesCard = new Border { Child = _notesScroll, CornerRadius = new CornerRadius(10), BorderThickness = new Thickness(1), Padding = new Thickness(22, 18, 10, 16) };
+        notesCard.SetResourceReference(Border.BackgroundProperty, "Panel");
+        notesCard.SetResourceReference(Border.BorderBrushProperty, "Border");
+        RenderOptions.SetClearTypeHint(notesCard, ClearTypeHint.Enabled);
+        right.Children.Add(notesCard);
 
         var body = new DockPanel { Margin = new Thickness(18, 16, 18, 14) };
         DockPanel.SetDock(close, Dock.Bottom);

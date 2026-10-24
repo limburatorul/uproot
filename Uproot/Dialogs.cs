@@ -24,18 +24,25 @@ public class GlassWindow : Window
         else WindowStartupLocation = WindowStartupLocation.CenterScreen;
     }
 
-    /// <summary>The window's content on the app's surface, with a row of buttons at the bottom.</summary>
+    /// <summary>
+    /// The window's content on an opaque panel (its text gets ClearType, as the main window's cards do), over a footer
+    /// on the glass that holds the buttons, as Windows' own dialogs have it (1.0.4).
+    /// </summary>
     protected void Body(UIElement content, params Button[] buttons)
     {
-        var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 14, 0, 0) };
+        var row = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
         foreach (var b in buttons) { b.Margin = new Thickness(8, 0, 0, 0); row.Children.Add(b); }
-        var dock = new DockPanel { Margin = new Thickness(20, 18, 20, 16) };
-        DockPanel.SetDock(row, Dock.Bottom);
-        dock.Children.Add(row);
-        dock.Children.Add(content);
-        var ground = new Border { Child = dock };
-        ground.SetResourceReference(Border.BackgroundProperty, "Surface");
-        Content = ground;
+        var footer = new Border { Child = row, Padding = new Thickness(24, 14, 24, 14), BorderThickness = new Thickness(0, 1, 0, 0) };
+        footer.SetResourceReference(Border.BackgroundProperty, "Surface");
+        footer.SetResourceReference(Border.BorderBrushProperty, "Divider");
+        var page = new Border { Child = content, Padding = new Thickness(24, 22, 24, 20) };
+        page.SetResourceReference(Border.BackgroundProperty, "Panel");
+        RenderOptions.SetClearTypeHint(page, ClearTypeHint.Enabled);
+        var dock = new DockPanel();
+        DockPanel.SetDock(footer, Dock.Bottom);
+        dock.Children.Add(footer);
+        dock.Children.Add(page);
+        Content = dock;
     }
 
     public static Button MakeButton(string text, bool primary, RoutedEventHandler click)
@@ -66,8 +73,8 @@ public sealed class Ask : GlassWindow
         SizeToContent = SizeToContent.Height;
         ResizeMode = ResizeMode.NoResize;
         var words = new StackPanel();
-        words.Children.Add(new TextBlock { Text = title, FontSize = 16, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 8) });
-        words.Children.Add(new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, LineHeight = 19 });
+        words.Children.Add(new TextBlock { Text = title, FontSize = 18, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 10) });
+        words.Children.Add(new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, LineHeight = 20, FontSize = 13.5 });
         var buttons = new List<Button>();
         if (yes != null) buttons.Add(MakeButton(yes, true, (_, _) => { _yes = true; Close(); }));
         buttons.Add(MakeButton(no, yes == null, (_, _) => Close()));

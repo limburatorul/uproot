@@ -58,8 +58,8 @@
         <Setter Property="FocusVisualStyle" Value="{StaticResource PillFocus}" />
         <!-- Natural height even in a row of taller buttons, so a pill stays a pill -->
         <Setter Property="VerticalAlignment" Value="Center" />
-        <Setter Property="FontSize" Value="11" />
-        <Setter Property="Padding" Value="12,4" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Padding" Value="12,5" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="Template">
             <Setter.Value>
@@ -218,6 +218,20 @@
         <Setter Property="Background" Value="{DynamicResource Accent}" />
         <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
         <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+        <!-- an accent border on an accent button changed nothing under the pointer: it lightens instead (Uproot 1.0.4) -->
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource AccentHover}" />
+            </Trigger>
+            <!-- off, it's a plain button: a faded green still read as one to press -->
+            <Trigger Property="IsEnabled" Value="False">
+                <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorder}" />
+                <Setter Property="Foreground" Value="{DynamicResource TextPrimary}" />
+                <Setter Property="FontWeight" Value="Normal" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- CheckBox -->

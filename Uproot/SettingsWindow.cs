@@ -11,6 +11,7 @@ public sealed class SettingsWindow : GlassWindow
 {
     private const string Utm = "utm_source=uproot&utm_medium=app";
     private readonly StackPanel _page = new();
+    private StackPanel _card = new();
 
     public SettingsWindow(Func<Task<string>> checkNow) : base("Settings — Uproot", 620, 720)
     {
@@ -40,11 +41,11 @@ public sealed class SettingsWindow : GlassWindow
         result.Margin = new Thickness(12, 0, 0, 0);
         row.Children.Add(check);
         row.Children.Add(result);
-        _page.Children.Add(row);
+        _card.Children.Add(row);
 
         Section("About");
-        _page.Children.Add(new TextBlock { Text = $"Uproot {Updater.Current.ToString(3)}", FontWeight = FontWeights.SemiBold });
-        _page.Children.Add(Dim("Free. Made by Protagonist Labs."));
+        _card.Children.Add(new TextBlock { Text = $"Uproot {Updater.Current.ToString(3)}", FontWeight = FontWeights.SemiBold });
+        _card.Children.Add(Dim("Free. Made by Protagonist Labs."));
         Line(Link("What's new", WhatsNewWindow.Open), " · every release, month by month");
         Line(Link("Send feedback", () => Open("mailto:feedback@protagonistlabs.app?subject=Uproot%20feedback")), " · feedback@protagonistlabs.app — bugs, ideas, anything");
         Line(Link("Website", () => Open($"{Ecosystem.Page}?{Utm}&utm_campaign=about")), " · protagonistlabs.app/uproot");
@@ -85,17 +86,25 @@ public sealed class SettingsWindow : GlassWindow
         }
     }
 
-    private void Section(string title) =>
-        _page.Children.Add(Themed(new TextBlock { Text = title, FontSize = 11, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, _page.Children.Count == 0 ? 0 : 22, 0, 8) }, "TextSecondary"));
+    /// <summary>A section: its name, then a card that what follows goes into (1.0.4).</summary>
+    private void Section(string title)
+    {
+        _page.Children.Add(Themed(new TextBlock { Text = title, FontSize = 12.5, FontWeight = FontWeights.SemiBold, Margin = new Thickness(2, _page.Children.Count == 0 ? 0 : 20, 0, 8) }, "TextSecondary"));
+        _card = new StackPanel();
+        var card = new Border { Child = _card, CornerRadius = new CornerRadius(8), BorderThickness = new Thickness(1), Padding = new Thickness(16, 12, 16, 12) };
+        card.SetResourceReference(Border.BackgroundProperty, "Field");
+        card.SetResourceReference(Border.BorderBrushProperty, "Border");
+        _page.Children.Add(card);
+    }
 
     private void Option(string label, string hint, bool value, Action<bool> save)
     {
         var box = new CheckBox { Content = label, IsChecked = value, Margin = new Thickness(0, 4, 0, 0) };
         box.Click += (_, _) => save(box.IsChecked == true);
-        _page.Children.Add(box);
-        var h = Dim(hint, 11.5);
-        h.Margin = new Thickness(26, 1, 0, 6);
-        _page.Children.Add(h);
+        _card.Children.Add(box);
+        var h = Dim(hint, 12);
+        h.Margin = new Thickness(26, 2, 0, 8);
+        _card.Children.Add(h);
     }
 
     private TextBlock Line(Inline first, string rest)
@@ -104,7 +113,7 @@ public sealed class SettingsWindow : GlassWindow
         line.Margin = new Thickness(0, 3, 0, 3);
         line.Inlines.Add(first);
         if (rest != "") line.Inlines.Add(new Run(rest));
-        _page.Children.Add(line);
+        _card.Children.Add(line);
         return line;
     }
 
