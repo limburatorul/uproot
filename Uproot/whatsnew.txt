@@ -27,6 +27,8 @@ Uproot lists every app on your PC the moment it opens, finds one as you type, an
 **1.0.5: a new icon**
 - **A new icon**, brighter and easier to spot in the taskbar.
 - What's new now shows a picture for each release.
+**1.0.6: buy me a pizza**
+- **Buy me a pizza** in Settings, if you'd like to chip in. It's optional, and it goes toward code signing and a Steam listing.
 **Also**
 - **1.0.1:** Uproot no longer closes a second after it opens when one app's icon carries a broken colour profile. A picture that can't be read is simply left blank.
 - Works with File Labs (open an app's folder), SpaceScan (see what's inside it) and Shelf (your games are marked).
