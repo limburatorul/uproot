@@ -29,6 +29,8 @@ Uproot lists every app on your PC the moment it opens, finds one as you type, an
 - What's new now shows a picture for each release.
 **1.0.6: buy me a pizza**
 - **Buy me a pizza** in Settings, if you'd like to chip in. It's optional, and it goes toward code signing and a Steam listing.
+**1.0.7: the pizza moves out front**
+- **Buy me a pizza** has left Settings for the bottom bar of the main window, in red, with a gentle double pulse every 10 seconds. It still only opens a page in your browser, and it stays still while minimized, under your pointer, or when Windows' animations are off.
 **Also**
 - **1.0.1:** Uproot no longer closes a second after it opens when one app's icon carries a broken colour profile. A picture that can't be read is simply left blank.
 - Works with File Labs (open an app's folder), SpaceScan (see what's inside it) and Shelf (your games are marked).
