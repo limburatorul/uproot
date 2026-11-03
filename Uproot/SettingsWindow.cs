@@ -50,11 +50,6 @@ public sealed class SettingsWindow : GlassWindow
         Line(Link("Send feedback", () => Open("mailto:feedback@protagonistlabs.app?subject=Uproot%20feedback")), " · feedback@protagonistlabs.app — bugs, ideas, anything");
         Line(Link("Website", () => Open($"{Ecosystem.Page}?{Utm}&utm_campaign=about")), " · protagonistlabs.app/uproot");
         Line(Link("More apps from Protagonist Labs", () => Open($"https://protagonistlabs.app/?{Utm}&utm_campaign=more-apps")), "");
-        var pizza = MakeButton("\U0001F355 Buy me a pizza", false, (_, _) => Open("https://buymeacoffee.com/protagonistlabs"));
-        pizza.ToolTip = "Optional. It goes toward code signing and a Steam listing.";
-        pizza.HorizontalAlignment = HorizontalAlignment.Left;
-        pizza.Margin = new Thickness(0, 10, 0, 0);
-        _card.Children.Add(pizza);
 
         Section("Works with");
         WorksWith();

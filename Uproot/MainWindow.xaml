@@ -116,6 +116,21 @@
         <Style x:Key="Glyph" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
         </Style>
+        <!-- the studio's red pizza button, the same in every free app; Nudge pulses it now and then -->
+        <Style x:Key="PizzaButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+            <Style.Resources>
+                <SolidColorBrush x:Key="ButtonHoverBorder" Color="#E54848" />
+                <SolidColorBrush x:Key="AccentDim" Color="#BF3030" />
+            </Style.Resources>
+            <Setter Property="Background" Value="#D63A3A" />
+            <Setter Property="BorderBrush" Value="#D63A3A" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="#E54848" /></Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Border Background="{DynamicResource Surface}">
@@ -327,6 +342,8 @@
                 <Button x:Name="StopWaiting" DockPanel.Dock="Right" Content="Stop waiting" Click="StopWaiting_Click" Visibility="Collapsed" Margin="0,0,8,0"
                         ToolTip="Go on to the next app without waiting for this uninstaller to finish" />
                 <Button x:Name="ClearChecked" DockPanel.Dock="Right" Content="Clear" Click="ClearChecked_Click" Visibility="Collapsed" Margin="0,0,8,0" />
+                <Button x:Name="Pizza" DockPanel.Dock="Left" Style="{StaticResource PizzaButton}" Content="&#x1F355; Buy me a pizza" Click="Pizza_Click" Margin="0,0,8,0"
+                        AutomationProperties.Name="Buy me a pizza" ToolTip="Optional. It goes toward code signing and a Steam listing." />
                 <TextBlock x:Name="Status" VerticalAlignment="Center" FontSize="13" Foreground="{DynamicResource TextSecondary}" TextTrimming="CharacterEllipsis" Margin="4,0,0,0" />
             </DockPanel>
         </Grid>

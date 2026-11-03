@@ -7,6 +7,8 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Data;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Uproot.Services;
 
@@ -35,6 +37,7 @@ public partial class MainWindow : Window
         Closed += (_, _) => _background.Cancel();
         PreviewKeyDown += Window_PreviewKeyDown;
         ShowSortHeaders();
+        StartNudge();
     }
 
     // --- loading ---
@@ -420,6 +423,44 @@ public partial class MainWindow : Window
         _view?.Refresh();
         Counts();
         ShowDetails();
+    }
+
+    private void Pizza_Click(object sender, RoutedEventArgs e) => SettingsWindow.Open("https://buymeacoffee.com/protagonistlabs");
+
+    /// <summary>
+    /// The pizza button pulses twice, 3 s after the window shows and every 10 s after, so it gets seen.
+    /// Not while minimized, not under the pointer, not when Windows' animation effects are off.
+    /// </summary>
+    private void StartNudge()
+    {
+        var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+        timer.Tick += (_, _) => { timer.Interval = TimeSpan.FromSeconds(10); Nudge(); };
+        ContentRendered += (_, _) => timer.Start();
+        StateChanged += (_, _) => { if (WindowState == WindowState.Minimized) timer.Stop(); else timer.Start(); };
+        Closed += (_, _) => timer.Stop();
+    }
+
+    private void Nudge()
+    {
+        if (!SystemParameters.ClientAreaAnimation || Pizza.IsMouseOver) return;
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var scale = new DoubleAnimationUsingKeyFrames();
+        var color = new ColorAnimationUsingKeyFrames();
+        var rest = Color.FromRgb(0xD6, 0x3A, 0x3A);
+        var peak = Color.FromRgb(0xF2, 0x55, 0x55);
+        foreach (var (ms, s, c) in new[] { (0, 1.0, rest), (175, 1.06, peak), (350, 1.0, rest), (525, 1.03, peak), (700, 1.0, rest) })
+        {
+            scale.KeyFrames.Add(new EasingDoubleKeyFrame(s, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(ms)), ease));
+            color.KeyFrames.Add(new EasingColorKeyFrame(c, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(ms)), ease));
+        }
+        var transform = new ScaleTransform();
+        Pizza.RenderTransform = transform;
+        transform.BeginAnimation(ScaleTransform.ScaleXProperty, scale);
+        transform.BeginAnimation(ScaleTransform.ScaleYProperty, scale);
+        // the style's brush is frozen: the pulse paints its own for 700 ms, then the style's (and its hover) is back
+        color.Completed += (_, _) => Pizza.ClearValue(BackgroundProperty);
+        Pizza.Background = new SolidColorBrush(rest);
+        Pizza.Background.BeginAnimation(SolidColorBrush.ColorProperty, color);
     }
 
     private void StartUpdateChecks()
